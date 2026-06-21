@@ -2,11 +2,11 @@
 FROM node:20-alpine AS frontend-build
 
 WORKDIR /frontend
-COPY frontend/package.json frontend/package.json
-RUN cd frontend && npm install
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm install
 
-COPY frontend frontend
-RUN cd frontend && npm run build
+COPY frontend ./
+RUN npm run build
 # vite.config.js outputs to ../backend/app/static, so the build lands at
 # /backend/app/static inside this stage.
 
