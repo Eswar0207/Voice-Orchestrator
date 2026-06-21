@@ -58,6 +58,49 @@ The system is designed with a single-container deployment topology where the Rea
 
 ---
 
+## Proposed Project Structure
+
+```
+voice_orchestrator/
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py              # FastAPI server & endpoints
+│   │   ├── config.py            # App settings and env configurations
+│   │   ├── database.py          # SQLAlchemy engine/session, DB models, seeding logic
+│   │   ├── orchestrator.py      # LangGraph state machine definition
+│   │   ├── vapi_client.py       # Vapi.ai API integration wrapper
+│   │   ├── webhook_security.py  # Vapi webhook signature verification
+│   │   └── llm_eval.py          # Provider-agnostic LLM evaluation interface
+│   ├── tests/
+│   │   ├── test_database.py     # CRUD + seeding
+│   │   ├── test_orchestrator.py # LangGraph routing & state transitions
+│   │   └── test_webhooks.py     # Webhook auth + routing
+│   ├── requirements.txt
+│   ├── Dockerfile               # Multi-stage build (builds frontend, copies into backend image)
+│   └── .env.example
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Dashboard.jsx       # Campaign + statistics UI
+│   │   │   ├── TenantSelector.jsx  # Tenant switching widget
+│   │   │   ├── LeadTable.jsx       # Interactive list of leads
+│   │   │   └── LogViewer.jsx       # Call logs & transcript viewer modal
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── tailwind.config.js
+│   └── postcss.config.js
+├── docker-compose.yml            # Local: backend + postgres, single command spin-up
+├── cloudbuild.yaml               # Reproducible GCP Cloud Build config
+├── deploy.sh                     # GCP Cloud Run deployment script
+└── README.md                     # Setup, local run, deployment, architecture explanation
+```
+
+---
+
 ## 2. Core Codebase Components
 
 ### 🗄️ Database Layer (`backend/app/database.py`)
