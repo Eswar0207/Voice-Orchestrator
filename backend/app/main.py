@@ -202,6 +202,30 @@ def trigger_campaign(company_id: uuid.UUID, background_tasks: BackgroundTasks):
     )
 
 
+@app.post("/api/campaigns/{company_id}/reset")
+def reset_campaign(company_id: uuid.UUID):
+    db = SessionLocal()
+    try:
+        from app.database import LeadStatus
+        customers = db.query(Customer).filter(Customer.company_id == company_id).all()
+        for customer in customers:
+            if customer.name in ["Rohan Mehta", "Priya Nair", "Sara Linde", "Marcus Webb"]:
+                customer.status = LeadStatus.PENDING
+            elif customer.name == "Daniel Cho":
+                customer.status = LeadStatus.QUALIFIED
+            elif customer.name == "Aiko Tanaka":
+                customer.status = LeadStatus.NOT_INTERESTED
+            customer.vapi_call_id = None
+            db.query(CallLog).filter(CallLog.customer_id == customer.id).delete()
+        db.commit()
+        return {"status": "ok"}
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(exc))
+    finally:
+        db.close()
+
+
 # --- Webhook ---------------------------------------------------------------
 
 @app.post("/api/webhooks/vapi")

@@ -28,6 +28,8 @@ export default function Dashboard({
   onTriggerCampaign,
   triggering,
   triggerMessage,
+  onResetCampaign,
+  resetting,
 }) {
   if (!company) {
     return (
@@ -57,17 +59,27 @@ export default function Dashboard({
         </div>
 
         <div className="flex flex-col items-end gap-2">
-          <button
-            onClick={onTriggerCampaign}
-            disabled={triggering || pendingCount === 0}
-            className="px-5 py-2.5 rounded-xl bg-accent text-ink font-semibold text-sm
-                       hover:bg-accent-soft transition-colors disabled:opacity-40
-                       disabled:cursor-not-allowed shadow-[0_0_24px_rgba(110,155,255,0.25)]"
-          >
-            {triggering
-              ? "Dispatching…"
-              : `Trigger Outbound Campaign (${pendingCount} pending)`}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onResetCampaign}
+              disabled={resetting || triggering}
+              className="px-4 py-2.5 rounded-xl border border-line bg-transparent text-zinc-300 font-semibold text-sm
+                         hover:bg-zinc-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {resetting ? "Resetting…" : "Reset Leads"}
+            </button>
+            <button
+              onClick={onTriggerCampaign}
+              disabled={triggering || resetting || pendingCount === 0}
+              className="px-5 py-2.5 rounded-xl bg-accent text-ink font-semibold text-sm
+                         hover:bg-accent-soft transition-colors disabled:opacity-40
+                         disabled:cursor-not-allowed shadow-[0_0_24px_rgba(110,155,255,0.25)]"
+            >
+              {triggering
+                ? "Dispatching…"
+                : `Trigger Outbound Campaign (${pendingCount} pending)`}
+            </button>
+          </div>
           {triggerMessage && (
             <span className="text-xs text-zinc-400 font-mono">{triggerMessage}</span>
           )}

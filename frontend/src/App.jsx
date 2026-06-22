@@ -34,6 +34,8 @@ export default function App() {
       .finally(() => setLoadingCustomers(false));
   }, []);
 
+  const [resetting, setResetting] = useState(false);
+
   // Fetch + poll whenever the active tenant changes
   useEffect(() => {
     if (!activeCompanyId) return;
@@ -66,6 +68,27 @@ export default function App() {
       setTriggerMessage("Campaign trigger failed. Check backend logs.");
     } finally {
       setTriggering(false);
+    }
+  };
+
+  const handleResetCampaign = async () => {
+    if (!activeCompanyId) return;
+    setResetting(true);
+    setTriggerMessage(null);
+    try {
+      const res = await fetch(`/api/campaigns/${activeCompanyId}/reset`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        setTriggerMessage("Leads reset to Pending successfully.");
+        fetchCustomers(activeCompanyId);
+      } else {
+        setTriggerMessage("Failed to reset leads.");
+      }
+    } catch {
+      setTriggerMessage("Reset failed. Check backend logs.");
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -105,6 +128,8 @@ export default function App() {
           onTriggerCampaign={handleTriggerCampaign}
           triggering={triggering}
           triggerMessage={triggerMessage}
+          onResetCampaign={handleResetCampaign}
+          resetting={resetting}
         />
       </main>
     </div>
