@@ -31,7 +31,7 @@ steps:
           "--platform=managed"
           "--allow-unauthenticated"
           "--set-secrets=DATABASE_URL=DATABASE_URL:latest,VAPI_PRIVATE_KEY=VAPI_PRIVATE_KEY:latest,VAPI_ASSISTANT_ID=VAPI_ASSISTANT_ID:latest,VAPI_PHONE_NUMBER_ID=VAPI_PHONE_NUMBER_ID:latest,VAPI_WEBHOOK_SECRET=VAPI_WEBHOOK_SECRET:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest"
-          "--set-env-vars=ENVIRONMENT=production"
+          "--set-env-vars=ENVIRONMENT=production,SIMULATION_MODE=$_SIMULATION_MODE"
         )
         if [ ! -z "$_CLOUDSQL_INSTANCE" ]; then
           ARGS+=("--add-cloudsql-instances=$_CLOUDSQL_INSTANCE")
@@ -45,3 +45,4 @@ images:
 substitutions:
   _REGION: us-central1
   _CLOUDSQL_INSTANCE: ""
+  _SIMULATION_MODE: "true"

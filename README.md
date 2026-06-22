@@ -243,6 +243,7 @@ The platform is configured for multi-stage building and deploying to Google Clou
     Edit the `deploy.sh` script to set:
     *   `REGION`: The target GCP region for your Cloud Run service (e.g. `europe-west1` or `us-central1`).
     *   `CLOUDSQL_INSTANCE`: Your Cloud SQL instance connection name (e.g. `my-project:us-central1:my-postgres-instance`). This enables the Cloud SQL proxy sidecar on Cloud Run.
+    *   `SIMULATION_MODE`: Set to `true` (default) to simulate outbound calls and evaluations in Cloud Run, or `false` to perform real outbound calls using the Vapi API.
 
 4.  **Execute the deployment script**:
     ```bash
