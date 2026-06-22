@@ -7,9 +7,9 @@ function parseTranscriptLines(transcript) {
     .split("\n")
     .filter(Boolean)
     .map((line) => {
-      const match = line.match(/^(AI|User|Assistant|Bot)\s*:\s*(.*)$/i);
+      const match = line.match(/^(AI|User|Assistant|Bot|Agent|System|Caller|Callee|Customer|Representative|Salesperson|Lead)\s*:\s*(.*)$/i);
       if (match) {
-        const role = /user/i.test(match[1]) ? "User" : "Agent";
+        const role = /user|customer|lead/i.test(match[1]) ? "User" : "Agent";
         return { role, text: match[2] };
       }
       return { role: "Agent", text: line };
