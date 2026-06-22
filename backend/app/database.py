@@ -100,6 +100,7 @@ class Company(Base):
 
     id: Mapped[uuid.UUID] = Column(UUID(), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = Column(String, nullable=False)
+    description: Mapped[str] = Column(Text, nullable=True)
     prompt_instructions: Mapped[str] = Column(Text, nullable=False)
     created_at: Mapped[datetime] = Column(DateTime, default=datetime.utcnow)
 
@@ -168,6 +169,7 @@ def seed_if_empty() -> None:
 
         apex = Company(
             name="Apex Properties",
+            description="Campaign: Qualify leads looking to buy a residential home with a budget of $400,000 or more.",
             prompt_instructions=(
                 "You are a real estate qualification agent for Apex Properties, "
                 "which sells residential houses. Your goal is to determine if the "
@@ -178,6 +180,7 @@ def seed_if_empty() -> None:
         )
         elite = Company(
             name="Elite Rentals",
+            description="Campaign: Qualify leads looking to rent a luxury apartment for a lease duration of 12 months or longer.",
             prompt_instructions=(
                 "You are a leasing qualification agent for Elite Rentals, which "
                 "rents luxury apartments. Your goal is to determine if the lead is "

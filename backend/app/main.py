@@ -87,6 +87,7 @@ def on_startup() -> None:
 class CompanyOut(BaseModel):
     id: uuid.UUID
     name: str
+    description: str | None = None
     prompt_instructions: str
 
     class Config:

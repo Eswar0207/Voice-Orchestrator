@@ -52,7 +52,7 @@ export default function Dashboard({
             {company.name}
           </h2>
           <p className="text-sm text-zinc-500 max-w-xl mt-1">
-            {company.prompt_instructions}
+            {company.description || company.prompt_instructions}
           </p>
         </div>
 
