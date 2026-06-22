@@ -9,16 +9,16 @@ A premium, cloud-native, multi-tenant SaaS platform that enables companies (tena
 Here is the system in action, demonstrating the campaign lifecycle from initial setup to real-time AI qualification:
 
 ### 1. Initial Dashboard (Apex Properties)
-When the application starts, it seeds demo tenants (Apex Properties and Elite Rentals) with pending leads. You can configure custom qualification criteria for each tenant.
-![Initial Dashboard](./screenshots/1_dashboard_initial.jpg)
+When the application starts, it seeds demo tenants (Apex Properties and Elite Rentals) with pending leads. The dashboard renders a user-friendly description of the campaign criteria for administrators instead of raw prompt leakage.
+![Initial Dashboard](./screenshots/1_dashboard_initial.png)
 
-### 2. Campaign Execution (In-Flight)
-Triggering the outbound campaign dispatches outbound calls using Vapi.ai (or the simulation worker in local development mode). The status of the leads dynamically transitions to `CALL_INITIATED`.
-![Campaign Execution](./screenshots/2_dashboard_campaign.jpg)
+### 2. Elite Rentals Dashboard
+Switching between tenants dynamically updates the dashboard workspace, statistics, and leads.
+![Elite Rentals Dashboard](./screenshots/2_dashboard_elite.png)
 
 ### 3. Call Inspector & AI Qualification Logs
-Once a call completes, Vapi.ai triggers a webhook with the transcript. The LangGraph evaluation node invokes the LLM (OpenAI or Gemini) to classify the lead's eligibility. You can view the transcript, reasoning, and metadata inside the logs drawer.
-![Call Inspector Logs](./screenshots/3_dashboard_call_logs.jpg)
+Once a call completes, Vapi.ai (or the simulation mode handler) triggers the LangGraph evaluation node to classify the lead's eligibility. Clicking **View Logs** opens a beautifully formatted scrollable modal showing the neutral summary, AI classification reasoning, and the exact dialog split cleanly into Agent and User bubbles.
+![Call Inspector Logs](./screenshots/3_dashboard_call_logs.png)
 
 ---
 
@@ -105,7 +105,7 @@ voice_orchestrator/
 
 ### 🗄️ Database Layer (`backend/app/database.py`)
 Sets up the SQLAlchemy ORM models, connections, and automatic seeding.
-*   **Tenant Partitioning (`Company`)**: Houses tenant data and the `prompt_instructions` that dictate how the AI voice agent behaves and how qualification is measured.
+*   **Tenant Partitioning (`Company`)**: Houses tenant data, a human-facing `description`, and the `prompt_instructions` that dictate how the AI voice agent behaves and how qualification is measured.
 *   **Lead Lifecycle (`Customer`)**: Tracks customer details (`name`, `phone_number`, `vapi_call_id`) and status states (`PENDING`, `CALL_INITIATED`, `QUALIFIED`, `NOT_INTERESTED`, `FAILED`, `NEEDS_REVIEW`).
 *   **Composite Indexing**: `Customer.company_id` and `Customer.status` are composite-indexed to optimize queries run by the dispatch engine.
 *   **Platform Independence**: Utilizes a custom `UUID` type decorator that uses PostgreSQL's native UUID type in production, falling back to a `CHAR(36)` representation in SQLite for testing.
