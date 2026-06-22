@@ -189,22 +189,26 @@ def seed_if_empty() -> None:
         db.add_all([apex, elite])
         db.flush()  # get IDs without committing yet
 
+        # Dynamically generate generic customer names
+        first_names = ["John", "Jane", "Robert", "Emily", "Michael", "Sarah"]
+        last_names = ["Smith", "Doe", "Johnson", "Williams", "Jones", "Brown"]
+
         apex_customers = [
             Customer(
                 company_id=apex.id,
-                name="Rohan Mehta",
+                name=f"{first_names[0]} {last_names[0]}",
                 phone_number="+15550100001",
                 status=LeadStatus.PENDING,
             ),
             Customer(
                 company_id=apex.id,
-                name="Priya Nair",
+                name=f"{first_names[1]} {last_names[1]}",
                 phone_number="+15550100002",
                 status=LeadStatus.PENDING,
             ),
             Customer(
                 company_id=apex.id,
-                name="Daniel Cho",
+                name=f"{first_names[2]} {last_names[2]}",
                 phone_number="+15550100003",
                 status=LeadStatus.QUALIFIED,
             ),
@@ -213,19 +217,19 @@ def seed_if_empty() -> None:
         elite_customers = [
             Customer(
                 company_id=elite.id,
-                name="Sara Linde",
+                name=f"{first_names[3]} {last_names[3]}",
                 phone_number="+15550200001",
                 status=LeadStatus.PENDING,
             ),
             Customer(
                 company_id=elite.id,
-                name="Marcus Webb",
+                name=f"{first_names[4]} {last_names[4]}",
                 phone_number="+15550200002",
                 status=LeadStatus.PENDING,
             ),
             Customer(
                 company_id=elite.id,
-                name="Aiko Tanaka",
+                name=f"{first_names[5]} {last_names[5]}",
                 phone_number="+15550200003",
                 status=LeadStatus.NOT_INTERESTED,
             ),

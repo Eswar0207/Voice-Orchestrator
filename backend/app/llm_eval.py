@@ -101,55 +101,60 @@ def _evaluate_with_gemini(user_prompt: str) -> EvaluationResult:
     return _parse_llm_json(response.text)
 
 
-def get_mock_transcript_and_eval(customer_name: str) -> tuple[str, str, dict]:
+def get_mock_transcript_and_eval(customer_name: str, customer_phone: str = None) -> tuple[str, str, dict]:
     """
     Generates a realistic transcript, summary, and evaluation classification
     for demo purposes when SIMULATION_MODE is active.
     """
-    if "Rohan" in customer_name:
-        transcript = (
-            "Agent: Hi Rohan, I'm calling from Apex Properties. Are you looking to buy a house?\n"
-            "User: Yes, I am. My budget is $500,000, and I'd like to buy in Seattle within 2 months."
-        )
-        summary = "Lead is interested in buying a house in Seattle with a budget of $500k."
-        evaluation = {
-            "status": "QUALIFIED",
-            "reasoning": "Lead confirmed budget of $500k and timeline of 2 months, which matches the criteria of >=$400k.",
-            "summary": summary
-        }
-    elif "Priya" in customer_name:
-        transcript = (
-            "Agent: Hi Priya, I'm calling from Apex Properties. Are you looking to buy a house?\n"
-            "User: No, I'm not interested in buying right now. Thanks."
-        )
-        summary = "Lead is not interested in buying."
-        evaluation = {
-            "status": "NOT_INTERESTED",
-            "reasoning": "Lead explicitly stated she is not interested in buying.",
-            "summary": summary
-        }
-    elif "Sara" in customer_name:
-        transcript = (
-            "Agent: Hi Sara, I'm calling from Elite Rentals. Are you looking to rent an apartment?\n"
-            "User: Yes, I'm looking for a 12-month lease with a budget of $3,500/month."
-        )
-        summary = "Lead is interested in a 12-month lease."
-        evaluation = {
-            "status": "QUALIFIED",
-            "reasoning": "Lead wants a 12-month lease, matching the company's requirement.",
-            "summary": summary
-        }
-    elif "Marcus" in customer_name:
-        transcript = (
-            "Agent: Hi Marcus, I'm calling from Elite Rentals. Are you looking to rent an apartment?\n"
-            "User: Only for a short term, like 2 or 3 months maximum."
-        )
-        summary = "Lead wants a short term lease."
-        evaluation = {
-            "status": "NOT_INTERESTED",
-            "reasoning": "Lead wants a 2-3 month lease, which is below the 12-month requirement.",
-            "summary": summary
-        }
+    phone = customer_phone or ""
+    is_elite = "55502" in phone or "Elite" in customer_name or "Sara" in customer_name or "Marcus" in customer_name or "Aiko" in customer_name
+    
+    if phone.endswith("1") or (not phone and "Rohan" in customer_name) or (not phone and "Sara" in customer_name):
+        if is_elite:
+            transcript = (
+                f"Agent: Hi {customer_name}, I'm calling from Elite Rentals. Are you looking to rent an apartment?\n"
+                f"User: Yes, I'm looking for a 12-month lease with a budget of $3,500/month."
+            )
+            summary = "Lead is interested in a 12-month lease."
+            evaluation = {
+                "status": "QUALIFIED",
+                "reasoning": "Lead wants a 12-month lease, matching the company's requirement.",
+                "summary": summary
+            }
+        else:
+            transcript = (
+                f"Agent: Hi {customer_name}, I'm calling from Apex Properties. Are you looking to buy a house?\n"
+                f"User: Yes, I am. My budget is $500,000, and I'd like to buy in Seattle within 2 months."
+            )
+            summary = "Lead is interested in buying a house in Seattle with a budget of $500k."
+            evaluation = {
+                "status": "QUALIFIED",
+                "reasoning": "Lead confirmed budget of $500k and timeline of 2 months, which matches the criteria of >=$400k.",
+                "summary": summary
+            }
+    elif phone.endswith("2") or (not phone and "Priya" in customer_name) or (not phone and "Marcus" in customer_name):
+        if is_elite:
+            transcript = (
+                f"Agent: Hi {customer_name}, I'm calling from Elite Rentals. Are you looking to rent an apartment?\n"
+                f"User: Only for a short term, like 2 or 3 months maximum."
+            )
+            summary = "Lead wants a short term lease."
+            evaluation = {
+                "status": "NOT_INTERESTED",
+                "reasoning": "Lead wants a 2-3 month lease, which is below the 12-month requirement.",
+                "summary": summary
+            }
+        else:
+            transcript = (
+                f"Agent: Hi {customer_name}, I'm calling from Apex Properties. Are you looking to buy a house?\n"
+                f"User: No, I'm not interested in buying right now. Thanks."
+            )
+            summary = "Lead is not interested in buying."
+            evaluation = {
+                "status": "NOT_INTERESTED",
+                "reasoning": "Lead explicitly stated she is not interested in buying.",
+                "summary": summary
+            }
     else:
         transcript = (
             "Agent: Hi, are you interested?\n"
@@ -177,20 +182,31 @@ def call_llm_evaluation(
     misclassify on an error).
     """
     if settings.SIMULATION_MODE:
-        if "Rohan" in transcript:
-            _, _, mock_eval = get_mock_transcript_and_eval("Rohan Mehta")
-        elif "Priya" in transcript:
-            _, _, mock_eval = get_mock_transcript_and_eval("Priya Nair")
-        elif "Sara" in transcript:
-            _, _, mock_eval = get_mock_transcript_and_eval("Sara Linde")
-        elif "Marcus" in transcript:
-            _, _, mock_eval = get_mock_transcript_and_eval("Marcus Webb")
+        if "Seattle" in transcript or "500,000" in transcript:
+            mock_status = "QUALIFIED"
+            mock_reasoning = "Lead confirmed budget of $500k and wants to buy in Seattle within 2 months."
+            mock_summary = "Interested in buying a house in Seattle with a budget of $500k."
+        elif "12-month" in transcript or "3,500" in transcript:
+            mock_status = "QUALIFIED"
+            mock_reasoning = "Lead wants a 12-month lease at $3,500/month, matching criteria."
+            mock_summary = "Interested in renting an apartment."
+        elif "not interested" in transcript:
+            mock_status = "NOT_INTERESTED"
+            mock_reasoning = "Lead explicitly stated not interested."
+            mock_summary = "Lead is not interested."
+        elif "short term" in transcript:
+            mock_status = "NOT_INTERESTED"
+            mock_reasoning = "Lead wants a short term lease (2-3 months), which does not meet criteria."
+            mock_summary = "Wants short-term lease."
         else:
-            _, _, mock_eval = get_mock_transcript_and_eval("Unknown")
+            mock_status = "NEEDS_REVIEW"
+            mock_reasoning = "Incomplete call; lead is ambiguous. Flagged for review."
+            mock_summary = "Ambiguous or incomplete conversation."
+            
         return EvaluationResult(
-            status=mock_eval["status"],
-            reasoning=mock_eval["reasoning"],
-            summary=mock_eval["summary"],
+            status=mock_status,
+            reasoning=mock_reasoning,
+            summary=vapi_summary or mock_summary,
         )
 
     user_prompt = _build_user_prompt(company_criteria, transcript, vapi_summary)

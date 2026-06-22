@@ -97,7 +97,11 @@ def dispatch_node(state: OrchestratorState) -> OrchestratorState:
                 customer.status = LeadStatus.CALL_INITIATED
                 customer.vapi_call_id = call_id
                 dispatched += 1
-                dispatched_list.append({"id": str(customer.id), "name": customer.name})
+                dispatched_list.append({
+                    "id": str(customer.id),
+                    "name": customer.name,
+                    "phone": customer.phone_number
+                })
             except VapiCallError as exc:
                 logger.error("Dispatch failed for customer %s: %s", customer.id, exc)
                 customer.status = LeadStatus.FAILED

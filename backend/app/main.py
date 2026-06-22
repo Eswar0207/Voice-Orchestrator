@@ -158,7 +158,7 @@ def list_call_logs(customer_id: uuid.UUID):
         db.close()
 
 
-def simulate_call_completion(customer_id: str, customer_name: str):
+def simulate_call_completion(customer_id: str, customer_name: str, customer_phone: str):
     """
     Simulates a call duration, then runs the evaluation flow in simulation mode.
     """
@@ -168,7 +168,7 @@ def simulate_call_completion(customer_id: str, customer_name: str):
     from app.llm_eval import get_mock_transcript_and_eval
     from app.orchestrator import run_evaluation
     
-    transcript, summary, evaluation = get_mock_transcript_and_eval(customer_name)
+    transcript, summary, evaluation = get_mock_transcript_and_eval(customer_name, customer_phone)
     
     run_evaluation(
         customer_id=customer_id,
@@ -194,6 +194,7 @@ def trigger_campaign(company_id: uuid.UUID, background_tasks: BackgroundTasks):
                 simulate_call_completion,
                 customer_id=customer["id"],
                 customer_name=customer["name"],
+                customer_phone=customer.get("phone", ""),
             )
             
     return DispatchResponse(
