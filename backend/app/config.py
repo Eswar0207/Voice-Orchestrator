@@ -7,8 +7,14 @@ local (docker-compose postgres) and production (GCP Cloud SQL) environments.
 import os
 from functools import lru_cache
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv()
+# Load dotenv relative to this config file (looks for .env in the parent backend directory)
+env_path = Path(__file__).resolve().parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
+else:
+    load_dotenv()
 
 
 class Settings:
