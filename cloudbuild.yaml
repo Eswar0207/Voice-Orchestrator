@@ -20,18 +20,28 @@ steps:
 
   # Deploy to Cloud Run, wiring secrets from Secret Manager
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-    entrypoint: gcloud
+    entrypoint: bash
     args:
-      - "run"
-      - "deploy"
-      - "voice-orchestrator"
-      - "--image=gcr.io/$PROJECT_ID/voice-orchestrator:$SHORT_SHA"
-      - "--region=us-central1"
-      - "--platform=managed"
-      - "--allow-unauthenticated"
-      - "--set-secrets=DATABASE_URL=DATABASE_URL:latest,VAPI_PRIVATE_KEY=VAPI_PRIVATE_KEY:latest,VAPI_ASSISTANT_ID=VAPI_ASSISTANT_ID:latest,VAPI_PHONE_NUMBER_ID=VAPI_PHONE_NUMBER_ID:latest,VAPI_WEBHOOK_SECRET=VAPI_WEBHOOK_SECRET:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest"
-      - "--set-env-vars=ENVIRONMENT=production"
+      - "-c"
+      - |
+        ARGS=(
+          "run" "deploy" "voice-orchestrator"
+          "--image=gcr.io/$PROJECT_ID/voice-orchestrator:$SHORT_SHA"
+          "--region=$_REGION"
+          "--platform=managed"
+          "--allow-unauthenticated"
+          "--set-secrets=DATABASE_URL=DATABASE_URL:latest,VAPI_PRIVATE_KEY=VAPI_PRIVATE_KEY:latest,VAPI_ASSISTANT_ID=VAPI_ASSISTANT_ID:latest,VAPI_PHONE_NUMBER_ID=VAPI_PHONE_NUMBER_ID:latest,VAPI_WEBHOOK_SECRET=VAPI_WEBHOOK_SECRET:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest"
+          "--set-env-vars=ENVIRONMENT=production"
+        )
+        if [ ! -z "$_CLOUDSQL_INSTANCE" ]; then
+          ARGS+=("--add-cloudsql-instances=$_CLOUDSQL_INSTANCE")
+        fi
+        gcloud "${ARGS[@]}"
 
 images:
   - "gcr.io/$PROJECT_ID/voice-orchestrator:$SHORT_SHA"
   - "gcr.io/$PROJECT_ID/voice-orchestrator:latest"
+
+substitutions:
+  _REGION: us-central1
+  _CLOUDSQL_INSTANCE: ""

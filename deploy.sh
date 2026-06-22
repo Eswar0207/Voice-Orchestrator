@@ -24,6 +24,7 @@ set -euo pipefail
 PROJECT_ID="$(gcloud config get-value project 2>/dev/null)"
 REGION="us-central1"
 SERVICE_NAME="voice-orchestrator"
+CLOUDSQL_INSTANCE="" # Set this to your Cloud SQL instance connection name (e.g. PROJECT:REGION:INSTANCE) if using Cloud SQL
 
 if [[ -z "$PROJECT_ID" ]]; then
   echo "No active gcloud project. Run: gcloud config set project <YOUR_PROJECT_ID>"
@@ -32,7 +33,8 @@ fi
 
 echo "==> Building and deploying to project: $PROJECT_ID (region: $REGION)"
 
-gcloud builds submit --config cloudbuild.yaml .
+gcloud builds submit --config cloudbuild.yaml \
+  --substitutions=_REGION="$REGION",_CLOUDSQL_INSTANCE="$CLOUDSQL_INSTANCE" .
 
 SERVICE_URL="$(gcloud run services describe "$SERVICE_NAME" \
   --region="$REGION" \

@@ -215,18 +215,37 @@ The 19 automated tests cover:
 
 The platform is configured for multi-stage building and deploying to Google Cloud Run:
 
-1.  Authenticate with GCP and set the target project:
+1.  **Authenticate with GCP and set the target project**:
     ```bash
     gcloud auth login
     gcloud config set project <YOUR_PROJECT_ID>
     ```
-2.  Create the environment secrets in Secret Manager:
-    ```bash
-    echo -n "<secret_value>" | gcloud secrets create DATABASE_URL --data-file=-
-    # Repeat for VAPI_PRIVATE_KEY, OPENAI_API_KEY, GEMINI_API_KEY, etc.
-    ```
-3.  Execute the deployment script:
+
+2.  **Configure environment secrets in Secret Manager**:
+    *   **DATABASE_URL**: Must be set to your production PostgreSQL connection string.
+        *   When deploying to Cloud Run and connecting to a **GCP Cloud SQL (PostgreSQL)** instance via the built-in Cloud SQL proxy (recommended), use the Unix domain socket connection string format:
+            `postgresql+psycopg2://<DB_USER>:<DB_PASSWORD>@/<DB_NAME>?host=/cloudsql/<INSTANCE_CONNECTION_NAME>`
+        *   *Example command to create the secret:*
+            ```bash
+            echo -n "postgresql+psycopg2://postgres:my-secret-password@/voice_orchestrator?host=/cloudsql/my-project:us-central1:my-postgres-instance" | gcloud secrets create DATABASE_URL --data-file=-
+            ```
+    *   **Other secrets**: Create Secret Manager secrets for the other environment variables:
+        ```bash
+        echo -n "<secret_value>" | gcloud secrets create VAPI_PRIVATE_KEY --data-file=-
+        echo -n "<secret_value>" | gcloud secrets create VAPI_ASSISTANT_ID --data-file=-
+        echo -n "<secret_value>" | gcloud secrets create VAPI_PHONE_NUMBER_ID --data-file=-
+        echo -n "<secret_value>" | gcloud secrets create VAPI_WEBHOOK_SECRET --data-file=-
+        echo -n "<secret_value>" | gcloud secrets create OPENAI_API_KEY --data-file=-
+        echo -n "<secret_value>" | gcloud secrets create GEMINI_API_KEY --data-file=-
+        ```
+
+3.  **Configure deploy.sh**:
+    Edit the `deploy.sh` script to set:
+    *   `REGION`: The target GCP region for your Cloud Run service (e.g. `europe-west1` or `us-central1`).
+    *   `CLOUDSQL_INSTANCE`: Your Cloud SQL instance connection name (e.g. `my-project:us-central1:my-postgres-instance`). This enables the Cloud SQL proxy sidecar on Cloud Run.
+
+4.  **Execute the deployment script**:
     ```bash
     ./deploy.sh
     ```
-    This triggers `gcloud builds submit` using `cloudbuild.yaml` which builds the frontend, injects it into the FastAPI container, and registers the service at GCP.
+    This triggers `gcloud builds submit` using `cloudbuild.yaml` which builds the frontend, packages the application, sets up the Secrets and Cloud SQL connection, and deploys the service on Google Cloud Run.
