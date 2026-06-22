@@ -35,11 +35,11 @@ export default function LogViewer({ customer, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 backdrop-blur-sm px-4 py-8 overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="glass-panel w-full max-w-2xl max-h-[80vh] flex flex-col"
+        className="glass-panel w-full max-w-2xl my-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-line/60">
@@ -51,13 +51,13 @@ export default function LogViewer({ customer, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-200 transition-colors text-sm"
+            className="text-zinc-500 hover:text-zinc-200 transition-colors text-sm font-medium"
           >
             Close
           </button>
         </div>
 
-        <div className="overflow-y-auto px-6 py-4 flex-1 min-h-0 max-h-[55vh]">
+        <div className="px-6 py-6">
           {loading && <p className="text-zinc-500 text-sm">Loading call log…</p>}
 
           {!loading && logs.length === 0 && (
@@ -65,7 +65,7 @@ export default function LogViewer({ customer, onClose }) {
           )}
 
           {!loading && latest && (
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-6">
               {latest.summary && (
                 <div>
                   <h4 className="text-xs font-mono uppercase tracking-wide text-zinc-500 mb-1.5">
@@ -85,10 +85,10 @@ export default function LogViewer({ customer, onClose }) {
               )}
 
               <div>
-                <h4 className="text-xs font-mono uppercase tracking-wide text-zinc-500 mb-2">
+                <h4 className="text-xs font-mono uppercase tracking-wide text-zinc-500 mb-2.5">
                   Transcript
                 </h4>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-3.5">
                   {lines.length === 0 && (
                     <p className="text-sm text-zinc-500">No transcript text recorded.</p>
                   )}
@@ -98,13 +98,13 @@ export default function LogViewer({ customer, onClose }) {
                       className={`flex ${line.role === "User" ? "justify-end" : "justify-start"}`}
                     >
                       <div
-                        className={`max-w-[80%] rounded-xl px-3.5 py-2 text-sm ${
+                        className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
                           line.role === "User"
                             ? "bg-accent/15 text-accent-soft"
                             : "bg-white/5 text-zinc-300"
                         }`}
                       >
-                        <span className="block text-[10px] font-mono uppercase tracking-wide opacity-60 mb-0.5">
+                        <span className="block text-[10px] font-mono uppercase tracking-wide opacity-60 mb-1">
                           {line.role}
                         </span>
                         {line.text}
