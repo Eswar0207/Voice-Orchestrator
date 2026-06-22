@@ -57,7 +57,7 @@ export default function LogViewer({ customer, onClose }) {
           </button>
         </div>
 
-        <div className="overflow-y-auto px-6 py-4 flex-1">
+        <div className="overflow-y-auto px-6 py-4 flex-1 min-h-0 max-h-[55vh]">
           {loading && <p className="text-zinc-500 text-sm">Loading call log…</p>}
 
           {!loading && logs.length === 0 && (
