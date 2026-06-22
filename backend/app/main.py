@@ -43,16 +43,25 @@ app.add_middleware(
 @app.on_event("startup")
 def on_startup() -> None:
     # Check database configuration
-    if settings.ENVIRONMENT == "production" and "localhost" in settings.DATABASE_URL:
-        logger.warning(
-            "⚠️ CRITICAL DATABASE CONFIGURATION WARNING:\n"
-            "The database URL ('DATABASE_URL') is pointing to 'localhost' in a production environment.\n"
-            "This will cause database connection errors unless you are running a local database proxy inside the container.\n"
-            "If you are deploying to GCP Cloud Run and using Cloud SQL, ensure that:\n"
-            "  1. The Cloud Run service has the Cloud SQL connection enabled (e.g. using --add-cloudsql-instances).\n"
-            "  2. The DATABASE_URL secret/env var is set to the Unix socket format:\n"
-            "     postgresql+psycopg2://<db_user>:<db_pass>@/<db_name>?host=/cloudsql/<INSTANCE_CONNECTION_NAME>\n"
-        )
+    if settings.ENVIRONMENT == "production":
+        if "localhost" in settings.DATABASE_URL:
+            logger.warning(
+                "⚠️ CRITICAL DATABASE CONFIGURATION WARNING:\n"
+                "The database URL ('DATABASE_URL') is pointing to 'localhost' in a production environment.\n"
+                "This will cause database connection errors unless you are running a local database proxy inside the container.\n"
+                "If you are deploying to GCP Cloud Run and using Cloud SQL, ensure that:\n"
+                "  1. The Cloud Run service has the Cloud SQL connection enabled (e.g. using --add-cloudsql-instances).\n"
+                "  2. The DATABASE_URL secret/env var is set to the Unix socket format:\n"
+                "     postgresql+psycopg2://<db_user>:<db_pass>@/<db_name>?host=/cloudsql/<INSTANCE_CONNECTION_NAME>\n"
+            )
+        elif "sqlite" in settings.DATABASE_URL:
+            logger.warning(
+                "⚠️ DATABASE CONFIGURATION WARNING:\n"
+                "The application is using a SQLite database ('DATABASE_URL') in a production environment.\n"
+                "While the application will run successfully, any database changes (leads, call logs, campaigns) "
+                "will be lost whenever the Cloud Run instance scales down or restarts.\n"
+                "For production, please configure a persistent PostgreSQL database (GCP Cloud SQL)."
+            )
 
     try:
         logger.info("Initializing database on startup...")

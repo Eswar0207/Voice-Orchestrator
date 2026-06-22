@@ -18,10 +18,9 @@ else:
 
 
 class Settings:
-    # Database
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
-        "postgresql+psycopg2://postgres:postgres@localhost:5432/voice_orchestrator",
+        "sqlite:///./voice_orchestrator.db",
     )
 
     # Simulation

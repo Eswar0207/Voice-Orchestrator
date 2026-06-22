@@ -22,7 +22,7 @@
 set -euo pipefail
 
 PROJECT_ID="$(gcloud config get-value project 2>/dev/null)"
-REGION="us-central1"
+REGION="europe-west1"
 SERVICE_NAME="voice-orchestrator"
 CLOUDSQL_INSTANCE="" # Set this to your Cloud SQL instance connection name (e.g. PROJECT:REGION:INSTANCE) if using Cloud SQL
 
