@@ -177,6 +177,21 @@ This launches a PostgreSQL database and builds/runs the single FastAPI-React con
     ```
     The Vite server runs at [http://localhost:5173](http://localhost:5173) and proxies `/api` requests to port `8000`.
 
+### Local Webhook Testing with ngrok
+
+Because Vapi requires a public HTTPS endpoint to send webhook notifications (such as the end-of-call report), you must set up a public tunnel to test real phone calls locally:
+
+1. **Install ngrok**: Download and install [ngrok](https://ngrok.com/) on your local machine.
+2. **Start the tunnel**: With your local FastAPI backend running on port `8000`, run:
+   ```bash
+   ngrok http 8000
+   ```
+3. **Copy the HTTPS URL**: Copy the HTTPS forwarding URL (e.g., `https://xxxx-xx-xx-xx-xx.ngrok-free.app`) from the ngrok terminal.
+4. **Update Vapi Settings**:
+   - Go to your Vapi dashboard under the assistant settings.
+   - Paste the forwarding URL appended with the webhook endpoint path into the Webhook URL field: `https://xxxx-xx-xx-xx-xx.ngrok-free.app/api/webhooks/vapi`.
+5. **Trigger a Campaign**: Trigger a campaign locally from your dashboard. Vapi will now be able to successfully post end-of-call reports back to your local environment.
+
 ---
 
 ## 4. Environment Variables Configuration
@@ -191,6 +206,24 @@ This launches a PostgreSQL database and builds/runs the single FastAPI-React con
 | `VAPI_WEBHOOK_SECRET` | Yes | Secret signature key configured in the Vapi console for signing payloads. |
 | `OPENAI_API_KEY` | One of two | Used for transcripts qualification evaluation. |
 | `GEMINI_API_KEY` | One of two | Used for qualification evaluation if OpenAI key is not configured. |
+
+> [!NOTE]
+> **Simulation vs. Production Mode**
+> - **Simulation Mode (`SIMULATION_MODE=true`)**: Set on the deployed Cloud Run instance by default for reliable, deterministic, and cost-free demonstrations. Campaigns simulate call durations and webhook payloads automatically.
+> - **Production Mode (`SIMULATION_MODE=false`)**: Initiates live outbound phone calls through Vapi.ai and processes actual webhook payloads.
+>
+> To switch to **Production Mode** on your deployed Cloud Run instance:
+> * **Via gcloud CLI**: Run the following command:
+>   ```bash
+>   gcloud run services update voice-orchestrator \
+>     --update-env-vars SIMULATION_MODE=false \
+>     --region europe-west1
+>   ```
+> * **Via GCP Console**:
+>   1. Go to the Cloud Run dashboard in the Google Cloud Console.
+>   2. Select the `voice-orchestrator` service and click **Edit & Deploy New Revision**.
+>   3. Under the **Variables & Secrets** tab, find `SIMULATION_MODE` and change its value to `false`.
+>   4. Click **Deploy**.
 
 ---
 
@@ -250,3 +283,23 @@ The platform is configured for multi-stage building and deploying to Google Clou
     ./deploy.sh
     ```
     This triggers `gcloud builds submit` using `cloudbuild.yaml` which builds the frontend, packages the application, sets up the Secrets and Cloud SQL connection, and deploys the service on Google Cloud Run.
+
+---
+
+## 7. Verifying the Real Call Flow (End-to-End)
+
+To verify the end-to-end real call integration in production, follow this verification flow:
+
+1. **Tail Cloud Run Logs**:
+   Run the following `gcloud` command to stream live logs from your deployed container:
+   ```bash
+   gcloud run services logs tail voice-orchestrator --region europe-west1
+   ```
+2. **Trigger a Campaign**:
+   Launch a campaign from the dashboard to initiate the process.
+3. **Trace the Execution Flow in Logs**:
+   Look for the following sequence of events in the logs:
+   * **Incoming Webhook Payload**: A webhook `POST` request hitting the `/api/webhooks/vapi` endpoint containing the call details.
+   * **Signature Verification Success**: Log lines confirming the `x-vapi-signature` header was verified successfully using the configured `VAPI_WEBHOOK_SECRET`.
+   * **LangGraph Evaluation Run**: Logs indicating that the LangGraph state machine initiated the evaluation node to process the conversation transcript.
+   * **Database Persistence**: Confirm the final customer status transition (e.g., from `CALL_INITIATED` to `QUALIFIED` or `NOT_INTERESTED`) is written successfully to the PostgreSQL database.
